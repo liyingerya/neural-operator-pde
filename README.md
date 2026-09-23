@@ -87,13 +87,15 @@ u = solve(u0, t_final=1.0, cx=1.0, cy=-0.5, nu=0.01)
 
 ## Status
 
-Stages 1–4 are implemented: the verified solver, reproducible trajectory
+Stages 1–5 are implemented: the verified solver, reproducible trajectory
 datasets, a conditioned one-step PyTorch Fourier Neural Operator baseline,
-and frozen-checkpoint scientific evaluation.
+frozen-checkpoint scientific evaluation, and controlled rollout/mass-aware
+training ablations.
 
 - [Stage 2 dataset schema and generation](docs/stage2_dataset.md)
 - [Stage 3 training protocol, verification, and results](docs/stage3_fno.md)
 - [Stage 4 rollout, OOD, CPU timing, and resolution evaluation](docs/stage4_evaluation.md)
+- [Stage 5 rollout training, mass penalty, and ablation results](docs/stage5_physics_aware_training.md)
 
 Stage 3 uses an optional ML dependency: `pip install -e '.[test,ml]'`.
 Run it with `python -m examples.train_fno`; the eight-pair overfit gate must
@@ -101,3 +103,9 @@ pass before full training starts. Stage 4 is evaluation-only and loads the
 existing approved checkpoint; it does not retrain or refit normalization.
 Use `pip install -e '.[test,evaluation]'` for its optional plotting dependencies.
 Generated archives, predictions, plots, and checkpoints remain local and ignored.
+
+Stage 5 retains the architecture, split, normalization, and frozen Stage 4
+evaluation sets. Run `python -m examples.train_stage5`, then
+`python -m examples.evaluate_stage5` and `python -m examples.report_stage5`.
+All tiny-window gates must pass before full training; checkpoint and mass-weight
+selection use validation data only. The historical Stage 3 model remains frozen.
