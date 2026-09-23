@@ -219,3 +219,6 @@ __marimo__/
 
 # Generated trajectory archives (reproduce from tracked configuration/code).
 /data/
+
+# Local Stage 3 training artifacts.
+/runs/

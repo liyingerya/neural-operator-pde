@@ -87,5 +87,13 @@ u = solve(u0, t_final=1.0, cx=1.0, cy=-0.5, nu=0.01)
 
 ## Status
 
-Only Stage 1 is implemented. Neural networks, PyTorch, dataset generation,
-and Fourier Neural Operators remain outside the current scope.
+Stages 1–3 are implemented: the verified solver, reproducible trajectory
+datasets, and a conditioned one-step PyTorch Fourier Neural Operator baseline.
+
+- [Stage 2 dataset schema and generation](docs/stage2_dataset.md)
+- [Stage 3 training protocol, verification, and results](docs/stage3_fno.md)
+
+Stage 3 uses an optional ML dependency: `pip install -e '.[test,ml]'`.
+Run it with `python -m examples.train_fno`; the eight-pair overfit gate must
+pass before full training starts. Stage 4 rollout, OOD, resolution-transfer,
+and benchmarking work is not implemented.
