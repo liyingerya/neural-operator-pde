@@ -87,15 +87,16 @@ u = solve(u0, t_final=1.0, cx=1.0, cy=-0.5, nu=0.01)
 
 ## Status
 
-Stages 1–5 are implemented: the verified solver, reproducible trajectory
+Stages 1–6 are implemented: the verified solver, reproducible trajectory
 datasets, a conditioned one-step PyTorch Fourier Neural Operator baseline,
 frozen-checkpoint scientific evaluation, and controlled rollout/mass-aware
-training ablations.
+training ablations, and a matched one-step control study.
 
 - [Stage 2 dataset schema and generation](docs/stage2_dataset.md)
 - [Stage 3 training protocol, verification, and results](docs/stage3_fno.md)
 - [Stage 4 rollout, OOD, CPU timing, and resolution evaluation](docs/stage4_evaluation.md)
 - [Stage 5 rollout training, mass penalty, and ablation results](docs/stage5_physics_aware_training.md)
+- [Stage 6 matched one-step control and training-budget comparison](docs/stage6_matched_control.md)
 
 Stage 3 uses an optional ML dependency: `pip install -e '.[test,ml]'`.
 Run it with `python -m examples.train_fno`; the eight-pair overfit gate must
@@ -109,3 +110,10 @@ evaluation sets. Run `python -m examples.train_stage5`, then
 `python -m examples.evaluate_stage5` and `python -m examples.report_stage5`.
 All tiny-window gates must pass before full training; checkpoint and mass-weight
 selection use validation data only. The historical Stage 3 model remains frozen.
+
+Stage 6 trains one additional one-step model for 60 epochs to match Stage 5's
+28,800 supervised-field comparisons, using the same initialization, optimizer,
+and final-rollout validation selection. Run `python -m examples.train_stage6`,
+then `python -m examples.evaluate_stage6` and `python -m examples.report_stage6`.
+The study preserves A/B/C and all existing evaluation data; equal field counts
+do not imply equal optimizer-update counts or exact compute.
