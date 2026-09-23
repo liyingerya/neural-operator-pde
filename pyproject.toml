@@ -13,7 +13,7 @@ dependencies = ["numpy>=1.23"]
 test = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
-include = ["advection_diffusion*"]
+include = ["advection_diffusion*", "dataset_generation*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

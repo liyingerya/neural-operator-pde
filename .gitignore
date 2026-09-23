@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Generated trajectory archives (reproduce from tracked configuration/code).
+/data/
