@@ -87,13 +87,17 @@ u = solve(u0, t_final=1.0, cx=1.0, cy=-0.5, nu=0.01)
 
 ## Status
 
-Stages 1–3 are implemented: the verified solver, reproducible trajectory
-datasets, and a conditioned one-step PyTorch Fourier Neural Operator baseline.
+Stages 1–4 are implemented: the verified solver, reproducible trajectory
+datasets, a conditioned one-step PyTorch Fourier Neural Operator baseline,
+and frozen-checkpoint scientific evaluation.
 
 - [Stage 2 dataset schema and generation](docs/stage2_dataset.md)
 - [Stage 3 training protocol, verification, and results](docs/stage3_fno.md)
+- [Stage 4 rollout, OOD, CPU timing, and resolution evaluation](docs/stage4_evaluation.md)
 
 Stage 3 uses an optional ML dependency: `pip install -e '.[test,ml]'`.
 Run it with `python -m examples.train_fno`; the eight-pair overfit gate must
-pass before full training starts. Stage 4 rollout, OOD, resolution-transfer,
-and benchmarking work is not implemented.
+pass before full training starts. Stage 4 is evaluation-only and loads the
+existing approved checkpoint; it does not retrain or refit normalization.
+Use `pip install -e '.[test,evaluation]'` for its optional plotting dependencies.
+Generated archives, predictions, plots, and checkpoints remain local and ignored.

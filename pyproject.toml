@@ -12,9 +12,10 @@ dependencies = ["numpy>=1.23"]
 [project.optional-dependencies]
 test = ["pytest>=7"]
 ml = ["torch>=2.2,<3"]
+evaluation = ["torch>=2.2,<3", "matplotlib>=3.8,<4"]
 
 [tool.setuptools.packages.find]
-include = ["advection_diffusion*", "dataset_generation*", "neural_operator*"]
+include = ["advection_diffusion*", "dataset_generation*", "neural_operator*", "stage4_evaluation*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
