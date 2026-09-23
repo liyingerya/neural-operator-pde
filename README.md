@@ -1,119 +1,116 @@
 # Neural Operator for 2D Advection–Diffusion
 
-Stage 1: a verified NumPy solver for the periodic equation
-`du/dt + cx du/dx + cy du/dy = nu (d²u/dx² + d²u/dy²)`.
+A Scientific ML study of when a Fourier Neural Operator succeeds—and fails—on
+a parameterized 2D advection–diffusion PDE. I built and verified the numerical
+solver, generated reproducible trajectories, trained a conditioned FNO from
+scratch in PyTorch, and evaluated rollout behavior, parameter extrapolation,
+physical conservation, grid transfer, and runtime.
 
-## Run
+[Technical report](docs/final_project_report.md) · [Results](docs/results/final_model_comparison.csv) · [Reproduction guide](docs/reproducibility.md) · [Provenance](docs/stage7_provenance.md)
 
-Python 3.10+ is required. NumPy is the only runtime dependency; pytest is
-used for verification. From the repository root:
+## Why this project
+
+Can a learned operator predict a parameterized periodic advection–diffusion PDE
+reliably beyond one-step interpolation? A verified solver provides reproducible
+labels; trajectory-level splits prevent snapshot leakage; frozen evaluations
+and a matched one-step control make the limitations visible.
+
+## Key results
+
+Errors are physical relative L2 unless labeled otherwise. A is the historical
+one-step baseline; D is the matched one-step control. Final rollout means ten
+steps to `t=1`.
+
+| Measurement | Frozen result |
+| --- | --- |
+| A: mean one-step ID error | **2.358%**, versus **8.439%** one-step persistence |
+| A: final ID rollout error | **17.134%**; final feedback ratio **7.62×** |
+| A: high-velocity OOD rollout error | **40.581%** |
+| D: final ID rollout error | **17.409%**, versus **28.848% / 28.215%** for rollout / rollout+mass models |
+| A: matched 64 → 128 native-grid error | **14.837% → 14.947%**, with no retraining |
+| Numerical verification | Second-order spatial and fourth-order temporal convergence checked against Fourier references |
+| CPU interval latency, batch 1 | Solver **0.345 ms**, FNO end-to-end **8.129 ms** on Apple M1: FNO **23.57× slower** |
+| A: final ID mass error | **8.188%**; conservation is not guaranteed |
+
+These are measured findings on a small workload, including negative results—not
+claims of a faster or generally reliable PDE replacement.
+
+![Historical baseline rollout error](docs/figures/rollout_error.png)
+
+## Pipeline
+
+Periodic PDE → verified finite-difference/RK4 solver → reproducible trajectories
+→ conditioned FNO → one-step evaluation → autoregressive/OOD/physical diagnostics
+→ controlled training ablations and matched control.
+
+## Model
+
+FNO is a natural baseline here because the PDE is periodic and its dynamics
+are naturally represented across spatial Fourier modes.
+
+The network maps `[u(t), cx, cy, nu]` to `u(t+0.1)`. Three scalar coefficients
+are broadcast over the periodic grid; no coordinate channels are added.
+Four blocks combine Fourier spectral convolution and local pointwise maps,
+with 12 retained modes, width 32, and GELU activations. The model has
+1,186,209 trainable tensor elements; complex weights correspond to 2,365,857
+real scalar components.
+
+## Scientific findings
+
+- Accurate single steps still accumulate substantial feedback error.
+- High-velocity extrapolation is harder here than high-diffusivity extrapolation.
+- Field accuracy, mass conservation, and positivity are distinct properties.
+- Rollout and soft-mass training underperformed the historical baseline.
+- A matched one-step control recovered near-baseline accuracy; unequal update
+  counts and gradient paths remain confounds, not proof of universal inferiority
+  of rollout training.
+- Similar 64/128 errors demonstrate a specific grid-transfer result, not continuum accuracy.
+- The FNO is slower than this inexpensive CPU solver; acceleration is workload-dependent.
+
+![Historical, ablation, and matched-control comparison](docs/figures/stage6_ablation.png)
+
+## Reproduce
+
+Python 3.10+; run from the repository root. NumPy supports the solver/data code;
+PyTorch and Matplotlib are optional ML/evaluation dependencies.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[test]'
-python -m pytest
-python -m examples.gaussian_demo --output /tmp/gaussian_demo.npz
+python -m pip install -e '.[test,evaluation]'
+python -m pytest -q
 ```
 
-The demo reports mass, extrema, and error against the analytic Gaussian,
-then saves coordinates, initial/final fields, analytic reference, and
-parameters in a single NumPy archive. It requires no plotting library.
+| Task | Entry point |
+| --- | --- |
+| Stage 1 demo | `python -m examples.gaussian_demo --output /tmp/gaussian_demo.npz` |
+| Stage 2 development data | `python -m examples.generate_dev_dataset` |
+| Stage 3 baseline training | `python -m examples.train_fno` |
+| Stage 4 frozen evaluation | `python -m examples.evaluate_stage4 --phase id` |
+| Stage 5 ablation | `python -m examples.train_stage5` |
+| Stage 6 matched control | `python -m examples.train_stage6` |
+| Final public figures/table, no training | `python -m examples.build_final_report` |
 
-## Numerical method
+The [reproduction guide](docs/reproducibility.md) gives the complete ordered
+commands and prerequisites. Datasets, checkpoints, run histories, and experimental
+plots are intentionally omitted from Git. Exact Stage 4–6 replay requires the
+approved local artifacts: fresh training is not guaranteed to reproduce their
+hashes. Tests and final figure generation work from public files alone.
 
-The domain is `[0, 2π) × [0, 2π)`, with grid spacing `h = 2π/n` and no
-duplicate endpoints. Arrays have shape `(n, n)`: axis 0 is x, axis 1 is y.
-Constant velocities and nonnegative diffusivity are supported.
+## Repository structure
 
-Centered second-order finite differences use `np.roll` for periodic neighbors:
+- `advection_diffusion/`, `dataset_generation/`: numerical reference and trajectories.
+- `neural_operator/`: PyTorch data, normalization, FNO, training, and metrics.
+- `stage4_evaluation/`, `stage5_training/`, `stage6_control/`: frozen experiments.
+- `examples/`, `tests/`: executable workflows and regression checks.
+- `docs/`: [final report](docs/final_project_report.md), historical reports, compact results, and five curated figures.
 
-```text
-Dx(u)[i,j]  = (u[i+1,j] - u[i-1,j]) / (2h)
-Dxx(u)[i,j] = (u[i+1,j] - 2u[i,j] + u[i-1,j]) / h²
-L(u)       = -cx Dx(u) - cy Dy(u) + nu (Dxx(u) + Dyy(u))
-```
+## Limitations
 
-Classical explicit RK4 evaluates L at four stages per timestep. Accuracy is
-second order in space and fourth order in time for smooth solutions. The
-initial Gaussian is summed over periodic images; tails are truncated beyond
-nine standard deviations, below double-precision significance at the peak.
-
-For a discrete Fourier mode, `lambda = -a - i b`, with
-
-```text
-a = (4 nu / h²) [sin²(theta_x/2) + sin²(theta_y/2)] <= 8 nu / h²
-|b| = |(cx sin(theta_x) + cy sin(theta_y)) / h| <= (|cx| + |cy|) / h.
-```
-
-RK4 has stability polynomial `R(z) = 1 + z + z²/2 + z³/6 + z⁴/24`.
-The rectangle `-1 <= Re(z) <= 0`, `|Im(z)| <= 1` lies in its stability
-region. The timestep helper therefore uses the sufficient bound
-
-```text
-dt = safety * min(h / (|cx| + |cy|), h² / (8 nu))
-```
-
-The default safety factor is 0.9. Zero denominators give infinite bounds.
-Pure advection is supported; zero coefficients leave the field unchanged.
-Supplied timesteps must satisfy the bound with safety=1; this conservative
-check can reject steps that pass a sharper spectral analysis. The final
-step is shortened to reach the requested final time.
-
-This is discrete L2 stability, not positivity or monotonicity preservation.
-Small oscillations can occur, especially for poorly resolved pulses.
-Pure-advection grid-scale checkerboard modes have zero centered derivative.
-Periodic differences conserve total mass up to floating-point roundoff.
-
-## API and files
-
-```python
-from advection_diffusion import periodic_grid, periodic_gaussian, solve
-
-x, y = periodic_grid(64)
-u0 = periodic_gaussian(x, y, sigma=0.4)
-u = solve(u0, t_final=1.0, cx=1.0, cy=-0.5, nu=0.01)
-```
-
-- `advection_diffusion/solver.py`: grid, spatial operator, timestep helper,
-  single RK4 step, and final-state integration. Inputs are not mutated.
-- `advection_diffusion/initial_conditions.py`: smooth periodic Gaussian.
-- `advection_diffusion/__init__.py`: public API exports.
-- `examples/gaussian_demo.py`: diagnostics and NumPy output.
-- `tests/`: constants, mass conservation, Fourier analytic comparisons,
-  second-order spatial and fourth-order temporal convergence, Gaussian
-  periodicity, discrete-mode stability, and invalid input checks.
-- `pyproject.toml`: package metadata, dependencies, and pytest configuration.
-
-## Status
-
-Stages 1–6 are implemented: the verified solver, reproducible trajectory
-datasets, a conditioned one-step PyTorch Fourier Neural Operator baseline,
-frozen-checkpoint scientific evaluation, and controlled rollout/mass-aware
-training ablations, and a matched one-step control study.
-
-- [Stage 2 dataset schema and generation](docs/stage2_dataset.md)
-- [Stage 3 training protocol, verification, and results](docs/stage3_fno.md)
-- [Stage 4 rollout, OOD, CPU timing, and resolution evaluation](docs/stage4_evaluation.md)
-- [Stage 5 rollout training, mass penalty, and ablation results](docs/stage5_physics_aware_training.md)
-- [Stage 6 matched one-step control and training-budget comparison](docs/stage6_matched_control.md)
-
-Stage 3 uses an optional ML dependency: `pip install -e '.[test,ml]'`.
-Run it with `python -m examples.train_fno`; the eight-pair overfit gate must
-pass before full training starts. Stage 4 is evaluation-only and loads the
-existing approved checkpoint; it does not retrain or refit normalization.
-Use `pip install -e '.[test,evaluation]'` for its optional plotting dependencies.
-Generated archives, predictions, plots, and checkpoints remain local and ignored.
-
-Stage 5 retains the architecture, split, normalization, and frozen Stage 4
-evaluation sets. Run `python -m examples.train_stage5`, then
-`python -m examples.evaluate_stage5` and `python -m examples.report_stage5`.
-All tiny-window gates must pass before full training; checkpoint and mass-weight
-selection use validation data only. The historical Stage 3 model remains frozen.
-
-Stage 6 trains one additional one-step model for 60 epochs to match Stage 5's
-28,800 supervised-field comparisons, using the same initialization, optimizer,
-and final-rollout validation selection. Run `python -m examples.train_stage6`,
-then `python -m examples.evaluate_stage6` and `python -m examples.report_stage6`.
-The study preserves A/B/C and all existing evaluation data; equal field counts
-do not imply equal optimizer-update counts or exact compute.
+Training uses smooth Gaussian mixtures, only 48 training trajectories, and one
+primary seed. The eight-trajectory ID test set supports no broad confidence
+claim. Labels are discretized solver solutions; neither conservation nor
+positivity is enforced. CPU timing is specific to the implementation, hardware,
+and workload. There is no claim of universal OOD generalization or resolution
+invariance. The scientific stages are complete; final presentation preserves
+their frozen results.

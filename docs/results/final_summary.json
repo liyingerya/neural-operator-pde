@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "frozen_source_revision": "cfb580e134f8e30de3c6659b3ec29cf234c07cb2",
+  "source_sha256": {
+    "docs/results/stage4_summary.json": "261c387c995c36dbee0e09687f6b4c9bba0ea89fe17f4a7376b9f4daad7052dd",
+    "docs/results/stage6_summary.json": "178087dc6949e29bd1f4acf065c766ccf28e8379c71aff4ec6779ee28f65f0a3",
+    "docs/stage3_fno.md": "418e587058a564fb02e062634023e24a45450ab133a6e34ea21d79bdf1b8a2f1",
+    "tests/test_solver.py": "3730aa0c1e1c9fce2b1ef766909e676a8a1da16c5aa69c612c5cd40d973c14b5"
+  },
+  "units": "All errors/fractions are dimensionless; plots and human tables multiply by 100.",
+  "count_note": "Full training budgets exclude discarded gates and C candidate search cost; selected-checkpoint counts are separate. Equal field exposure is not equal update count or exact compute.",
+  "models": {
+    "A": {
+      "objective": "one-step (historical)",
+      "supervised_fields_full_run": 48000,
+      "selected_epoch": 31,
+      "supervised_fields_selected": 14880,
+      "id_one_step_l2": 0.02357899803369004,
+      "id_final_ar_l2": 0.17133999759834082,
+      "id_mass_error": 0.08188138694993118,
+      "id_negative_mass_fraction": 0.00068628338177338,
+      "fresh_id_final_ar_l2": 0.15412007549349005,
+      "high_nu_final_ar_l2": 0.1405938859747442,
+      "high_velocity_final_ar_l2": 0.4058101757930695,
+      "native_64_final_ar_l2": 0.14836993479268745,
+      "transferred_128_final_ar_l2": 0.14946604323450657
+    },
+    "B": {
+      "objective": "autoregressive K=5",
+      "supervised_fields_full_run": 28800,
+      "selected_epoch": 16,
+      "supervised_fields_selected": 23040,
+      "id_one_step_l2": 0.06352470051806507,
+      "id_final_ar_l2": 0.28847692348151016,
+      "id_mass_error": 0.2567596087405521,
+      "id_negative_mass_fraction": 0.010836401870396271,
+      "fresh_id_final_ar_l2": 0.23952862534692823,
+      "high_nu_final_ar_l2": 0.24643056849614844,
+      "high_velocity_final_ar_l2": 0.5518121157493175,
+      "native_64_final_ar_l2": 0.2428658954644598,
+      "transferred_128_final_ar_l2": 0.2434672598170502
+    },
+    "C": {
+      "objective": "autoregressive K=5 + mass lambda=0.01",
+      "supervised_fields_full_run": 28800,
+      "selected_epoch": 16,
+      "supervised_fields_selected": 23040,
+      "id_one_step_l2": 0.06381087217407896,
+      "id_final_ar_l2": 0.28214607886552506,
+      "id_mass_error": 0.24704562999055754,
+      "id_negative_mass_fraction": 0.014481007445670985,
+      "fresh_id_final_ar_l2": 0.24276474355632027,
+      "high_nu_final_ar_l2": 0.24457578123740764,
+      "high_velocity_final_ar_l2": 0.5368697449752617,
+      "native_64_final_ar_l2": 0.24290056184590694,
+      "transferred_128_final_ar_l2": 0.24354647653932782
+    },
+    "D": {
+      "objective": "one-step (matched control)",
+      "supervised_fields_full_run": 28800,
+      "selected_epoch": 50,
+      "supervised_fields_selected": 24000,
+      "id_one_step_l2": 0.023739813952303023,
+      "id_final_ar_l2": 0.17409123995857806,
+      "id_mass_error": 0.07040504899608135,
+      "id_negative_mass_fraction": 0.0012296199756824343,
+      "fresh_id_final_ar_l2": 0.14398354358929705,
+      "high_nu_final_ar_l2": 0.14034076925909128,
+      "high_velocity_final_ar_l2": 0.38715503618185165,
+      "native_64_final_ar_l2": 0.14159710677205695,
+      "transferred_128_final_ar_l2": 0.14265396389453955
+    }
+  },
+  "persistence": {
+    "one_step_id_l2_published_rounded": 0.084391747,
+    "one_step_definition": "Copy the true field at each preceding snapshot; Stage 3 float32-target evaluation.",
+    "final_id_rollout_l2": 0.7654989378012217,
+    "rollout_definition": "Keep the initial field u0 at every horizon; Stage 4 float64 reference evaluation."
+  },
+  "baseline_id_horizons": {
+    "times": [
+      0.0,
+      0.1,
+      0.2,
+      0.30000000000000004,
+      0.4,
+      0.5,
+      0.6000000000000001,
+      0.7000000000000001,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "teacher_forced": [
+      0.0,
+      0.025203587055289533,
+      0.02473703420645472,
+      0.024307211189017335,
+      0.02391467692211355,
+      0.023560974847328206,
+      0.023248675122667834,
+      0.022981128111869323,
+      0.02276202233762636,
+      0.022594501486908294,
+      0.022480169057625236
+    ],
+    "autoregressive": [
+      0.0,
+      0.025203587055289533,
+      0.045573661524747885,
+      0.06430737117562559,
+      0.08196915705676058,
+      0.09873845753764832,
+      0.11469651387427923,
+      0.1298955803944546,
+      0.1443774507413116,
+      0.15817976124072253,
+      0.17133999759834082
+    ],
+    "persistence": [
+      0.0,
+      0.08678976387836163,
+      0.1728091727560614,
+      0.257380061636629,
+      0.3398746173011356,
+      0.4197302903226553,
+      0.496461631751666,
+      0.5696686575951883,
+      0.6390415400022612,
+      0.7043616216109906,
+      0.7654989378012217
+    ]
+  },
+  "cpu_id_benchmark": {
+    "1": {
+      "solver": {
+        "median_seconds": 0.00034487809278760796,
+        "q25_seconds": 0.00034353008824702426,
+        "q75_seconds": 0.0003474986480324771,
+        "iterations_per_group": 54,
+        "repeats": 30,
+        "warmups": 5,
+        "problems_per_second": 2899.5753018613646
+      },
+      "fno_forward": {
+        "median_seconds": 0.008165326503027853,
+        "q25_seconds": 0.008076965411116058,
+        "q75_seconds": 0.008292718746815808,
+        "iterations_per_group": 3,
+        "repeats": 30,
+        "warmups": 5,
+        "problems_per_second": 122.46907697189839
+      },
+      "fno_end_to_end": {
+        "median_seconds": 0.008129208164367204,
+        "q25_seconds": 0.008022684080060571,
+        "q75_seconds": 0.008204409663449042,
+        "iterations_per_group": 3,
+        "repeats": 30,
+        "warmups": 5,
+        "problems_per_second": 123.013211100105
+      },
+      "speedup_end_to_end": 0.04242456163188362,
+      "speedup_forward": 0.04223690169152707,
+      "trajectory_ids": [
+        51
+      ],
+      "base_dt": [
+        0.08113453366781283
+      ]
+    },
+    "8": {
+      "solver": {
+        "median_seconds": 0.0037783333342910432,
+        "q25_seconds": 0.0037495955014795372,
+        "q75_seconds": 0.0038069929990645806,
+        "iterations_per_group": 6,
+        "repeats": 30,
+        "warmups": 5,
+        "problems_per_second": 2117.33568539185
+      },
+      "fno_forward": {
+        "median_seconds": 0.04042691699578427,
+        "q25_seconds": 0.03945545850729104,
+        "q75_seconds": 0.04104968751198612,
+        "iterations_per_group": 1,
+        "repeats": 30,
+        "warmups": 5,
+        "problems_per_second": 197.88795670058744
+      },
+      "fno_end_to_end": {
+        "median_seconds": 0.03979483398143202,
+        "q25_seconds": 0.039339052251307294,
+        "q75_seconds": 0.04025384374835994,
+        "iterations_per_group": 1,
+        "repeats": 30,
+        "warmups": 5,
+        "problems_per_second": 201.0311188566019
+      },
+      "speedup_end_to_end": 0.09494532220071546,
+      "speedup_forward": 0.09346083290707152,
+      "trajectory_ids": [
+        51,
+        16,
+        49,
+        17,
+        40,
+        47,
+        22,
+        28
+      ],
+      "base_dt": [
+        0.08113453366781283,
+        0.10040621804937665,
+        0.03449508439086375,
+        0.02278998269533107,
+        0.08343557863515784,
+        0.059640536368318314,
+        0.023578560509217524,
+        0.06060902532099642
+      ]
+    }
+  },
+  "cpu_device": {
+    "device": "cpu",
+    "platform": "macOS-14.7.4-arm64-arm-64bit",
+    "cpu_model": "Apple M1",
+    "physical_cores": 8,
+    "logical_cores": 8,
+    "torch_threads": 4,
+    "torch_interop_threads": 8,
+    "versions": {
+      "python": "3.10.8",
+      "numpy": "2.2.6",
+      "torch": "2.14.0"
+    },
+    "thread_environment": {
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "VECLIB_MAXIMUM_THREADS": null
+    }
+  },
+  "interpretation_case": "case_1",
+  "figure_sources": {
+    "numerical_verification": "Frozen solver tests: verification diagram, not measured convergence curves",
+    "rollout_error": "Frozen public Stage 4/6 summaries; no inference",
+    "ood_comparison": "Frozen public Stage 4/6 summaries; no inference",
+    "stage6_ablation": "Frozen public Stage 4/6 summaries; no inference",
+    "resolution_transfer": "Frozen public Stage 4/6 summaries; no inference"
+  }
+}
